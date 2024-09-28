@@ -6,13 +6,14 @@ CONTAINER_DB = odoo-postgres
 
 help:
 	@echo "Available targets"
-	@echo "	  start			Start the compose with daemon"
-	@echo "	  stop			Stop the compose"
-	@echo "	  restart		Restart the compose"
-	@echo "	  console		Odoo intercative console"
-	@echo "	  psql			PostgreSQL intercative shell"
-	@echo "	  logs odoo		Logs the odoo container"
-	@echo "	  logs db		Logs the PostgreSQL contaicontainer"
+	@echo "	  start					Start the compose with daemon"
+	@echo "	  stop					Stop the compose"
+	@echo "	  restart				Restart the compose"
+	@echo "	  console				Odoo intercative console"
+	@echo "	  psql					PostgreSQL intercative shell"
+	@echo "	  logs odoo				Logs the odoo container"
+	@echo "	  logs db				Logs the PostgreSQL contaicontainer"
+	@echo "	  addon <addon_name>	Restart instance and upgrade addon"
 
 start:
 	$(DOCKER_COMPOSE) up -d
@@ -40,6 +41,13 @@ define log_target
 endef
 
 logs:
-	$(call log_target,$(word 2, $(MAKECMDGOALS)))
+	$(call log_target,$(word 2,$(MAKECMDGOALS)))
+
+define upgrade_addon
+	$(DOCKER) exec -it $(CONTAINER_ODOO) odoo --db_host=$(CONTAINER_DB) -d $(WEB_DB_NAME) -r $(CONTAINER_ODOO) -w $(CONTAINER_ODOO) -u $(1)
+endef
+
+addon: restart
+	$(call upgrade_addon,$(word 2,$(MAKECMDGOALS)))
 
 .PHONY: start stop restart console psql logs odoo db
